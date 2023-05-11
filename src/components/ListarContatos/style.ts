@@ -52,6 +52,12 @@ export const ContainerModalStyled = styled.div`
 
       padding: 1.25rem 0;
       overflow-y: auto;
+
+      .buttonAddNumber {
+        width: 13.75rem;
+        align-self: center;
+        box-shadow: inset -2px -2px 2px 0px;
+      }
     }
 
     .buttons {
@@ -150,10 +156,11 @@ export const ListContatosStyled = withTheme(styled.div`
           display: flex;
           gap: 0.625rem;
           position: absolute;
-          top: 0.625rem;
+          top: 0;
+          padding-top: 0.625rem;
           left: 1.25rem;
           z-index: 2;
-          width: 88%;
+          width: 86%;
 
           background: inherit;
           .idade {
@@ -193,8 +200,8 @@ export const ContainerTelefoneStyled = withTheme(styled.div`
 
   .removeInput {
     svg {
-      width: 100%;
-      height: 100%;
+      width: 80%;
+      height: 80%;
     }
   }
 `);

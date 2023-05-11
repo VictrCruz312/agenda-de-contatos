@@ -290,7 +290,7 @@ const ListarContatos = () => {
                       />
                       <Button
                         className="removeInput"
-                        variant="contained"
+                        variant="text"
                         onClick={() => {
                           setSelectedContato({
                             ...selectedContato,
@@ -307,7 +307,8 @@ const ListarContatos = () => {
                 }
               )}
               <Button
-                variant="contained"
+                className="buttonAddNumber"
+                variant="text"
                 onClick={() =>
                   setSelectedContato((contato: Contato) => {
                     return {
@@ -317,7 +318,7 @@ const ListarContatos = () => {
                   })
                 }
               >
-                Novo numero
+                Adicionar novo numero
               </Button>
             </div>
             <div className="buttons">
@@ -398,7 +399,7 @@ const ListarContatos = () => {
                       />
                       <Button
                         className="removeInput"
-                        variant="contained"
+                        variant="text"
                         onClick={() => {
                           setSelectedContato({
                             ...selectedContato,
@@ -415,7 +416,8 @@ const ListarContatos = () => {
                 }
               )}
               <Button
-                variant="contained"
+                className="buttonAddNumber"
+                variant="text"
                 onClick={() =>
                   setSelectedContato((contato: Contato) => {
                     if (selectedContato === null) {
@@ -425,7 +427,7 @@ const ListarContatos = () => {
                         telefones: [{ numero: "" }],
                       };
                     }
-                    console.log(contato);
+
                     return {
                       ...contato,
                       telefones: [...contato.telefones, { numero: "" }],
@@ -433,7 +435,7 @@ const ListarContatos = () => {
                   })
                 }
               >
-                Novo numero
+                adicionar novo numero
               </Button>
             </div>
             <div className="buttons">
