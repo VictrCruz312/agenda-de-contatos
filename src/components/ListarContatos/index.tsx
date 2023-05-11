@@ -14,12 +14,13 @@ import { GrClose } from "react-icons/gr";
 import { IoAddOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import Header from "../Header";
+import { Telefone } from "@prisma/client";
 
 type Contato = {
   id: number;
   nome: string;
   idade: string;
-  telefones: string[];
+  telefones: Telefone[];
 };
 
 export type ISearch = {
@@ -57,7 +58,7 @@ const ListarContatos = () => {
             .includes(search.value.toLowerCase());
         } else if (search.searchType === "telefone") {
           return contato.telefones.some((telefone) =>
-            telefone.toLowerCase().includes(search.value!.toLowerCase())
+            telefone.numero.toLowerCase().includes(search.value!.toLowerCase())
           );
         }
       } else {
@@ -160,7 +161,9 @@ const ListarContatos = () => {
                 </div>
                 <div className="telefones">
                   {contato.telefones.map((telefone, index) => (
-                    <p key={index}>{telefone}a</p>
+                    <p key={index}>
+                      telefone {index + 1}: {telefone.numero}
+                    </p>
                   ))}
                 </div>
               </ListItemButton>
@@ -188,36 +191,48 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <TextField
-              label="Nome"
-              value={selectedContato?.nome || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  nome: e.target.value,
-                })
-              }
-            />
-            <TextField
-              label="Idade"
-              value={selectedContato?.idade || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  idade: parseInt(e.target.value),
-                })
-              }
-            />
-            <TextField
-              label="Telefones"
-              value={selectedContato?.telefones?.join(", ") || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  telefones: e.target.value.split(", "),
-                })
-              }
-            />
+            <div className="inputs">
+              <TextField
+                label="Nome"
+                value={selectedContato?.nome || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSelectedContato({
+                    ...selectedContato,
+                    nome: e.target.value,
+                  })
+                }
+              />
+              <TextField
+                label="Idade"
+                value={selectedContato?.idade || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSelectedContato({
+                    ...selectedContato,
+                    idade: parseInt(e.target.value),
+                  })
+                }
+              />
+              {selectedContato?.telefones?.map(
+                (telefone: Telefone, index: number) => {
+                  return (
+                    <TextField
+                      key={index}
+                      label={`Telefone ${index + 1}`}
+                      value={telefone.numero}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedContato({
+                          ...selectedContato,
+                          telefones: selectedContato.telefones.map(
+                            (t: Telefone, i: number) =>
+                              i === index ? { ...t, numero: e.target.value } : t
+                          ),
+                        })
+                      }
+                    />
+                  );
+                }
+              )}
+            </div>
             <div className="buttons">
               <Button variant="contained" onClick={handleEditModalSave}>
                 Salvar
@@ -242,36 +257,38 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <TextField
-              label="Nome"
-              value={selectedContato?.nome || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  nome: e.target.value,
-                })
-              }
-            />
-            <TextField
-              label="Idade"
-              value={selectedContato?.idade || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  idade: parseInt(e.target.value),
-                })
-              }
-            />
-            <TextField
-              label="Telefones"
-              value={selectedContato?.telefones?.join(", ") || ""}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSelectedContato({
-                  ...selectedContato,
-                  telefones: e.target.value.split(", "),
-                })
-              }
-            />
+            <div className="inputs">
+              <TextField
+                label="Nome"
+                value={selectedContato?.nome || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSelectedContato({
+                    ...selectedContato,
+                    nome: e.target.value,
+                  })
+                }
+              />
+              <TextField
+                label="Idade"
+                value={selectedContato?.idade || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSelectedContato({
+                    ...selectedContato,
+                    idade: parseInt(e.target.value),
+                  })
+                }
+              />
+              <TextField
+                label="Telefones"
+                value={selectedContato?.telefones?.join(", ") || ""}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setSelectedContato({
+                    ...selectedContato,
+                    telefones: e.target.value.split(", "),
+                  })
+                }
+              />
+            </div>
             <div className="buttons">
               <Button variant="contained" onClick={handleCreateSave}>
                 Salvar

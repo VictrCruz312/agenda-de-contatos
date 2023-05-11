@@ -15,6 +15,7 @@ export const ContainerModalStyled = styled.div`
   .container {
     width: 80vw;
     height: 60vh;
+
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -33,6 +34,15 @@ export const ContainerModalStyled = styled.div`
         width: 20px;
         height: 20px;
       }
+    }
+
+    .inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      padding: 20px 0;
+      overflow-y: auto;
     }
 
     .buttons {
@@ -112,13 +122,14 @@ export const ListContatosStyled = withTheme(styled.div`
       .listItemButton {
         background: #f2f2f2;
         border-radius: 10px;
-        height: 60px;
 
         display: flex;
         flex-direction: column;
         gap: 10px;
 
         color: ${(props) => props.theme.palette.text.primary};
+        border: 2px solid ${(props) => props.theme.palette.primary.main};
+        box-shadow: inset 5px -9px 20px 0px ${(props) => props.theme.palette.text.disabled};
         font-size: 18px;
         font-weight: 700;
 
@@ -128,7 +139,10 @@ export const ListContatosStyled = withTheme(styled.div`
           position: absolute;
           top: 10px;
           left: 20px;
+          z-index: 2;
+          width: 88%;
 
+          background: inherit;
           .idade {
             color: ${(props) => props.theme.palette.text.disabled};
             font-size: 14px;
@@ -136,7 +150,13 @@ export const ListContatosStyled = withTheme(styled.div`
         }
 
         .telefones {
+          padding: 40px 0 10px 20px;
+          max-height: 110px;
+          overflow: auto;
+          z-index: 1;
+
           display: flex;
+          flex-wrap: wrap;
           gap: 15px;
 
           width: 100%;
