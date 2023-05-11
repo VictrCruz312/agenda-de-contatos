@@ -169,3 +169,19 @@ export const ListContatosStyled = withTheme(styled.div`
     }
   }
 `);
+
+export const ContainerTelefoneStyled = withTheme(styled.div`
+  display: flex;
+  gap: 10px;
+
+  .input {
+    width: 100%;
+  }
+
+  .removeInput {
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+`);

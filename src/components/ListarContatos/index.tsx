@@ -9,7 +9,11 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import { ContainerModalStyled, ListContatosStyled } from "./style";
+import {
+  ContainerModalStyled,
+  ContainerTelefoneStyled,
+  ListContatosStyled,
+} from "./style";
 import { GrClose } from "react-icons/gr";
 import { IoAddOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
@@ -50,6 +54,12 @@ const ListarContatos = () => {
   }, []);
 
   useEffect(() => {
+    if (createModalOpen) {
+      setSelectedContato({ nome: "", idade: "", telefones: [{ numero: "" }] });
+    }
+  }, [createModalOpen]);
+
+  useEffect(() => {
     const filtered = contatos.filter((contato) => {
       if (search.value) {
         if (search.searchType === "nome") {
@@ -70,6 +80,7 @@ const ListarContatos = () => {
   }, [search, contatos]);
 
   const handleEditModalSave = async () => {
+    console.log(selectedContato);
     const res = await toast.promise(
       fetch(`/api/contato/${selectedContato?.id}`, {
         method: "PATCH",
@@ -92,46 +103,91 @@ const ListarContatos = () => {
     setEditModalOpen(false);
   };
 
+  const deleteContato = async () => {
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await fetch(`/api/contato/${selectedContato?.id}`, {
+          method: "DELETE",
+        });
+        console.log("1213", res);
+        if (!res.ok) {
+          // Se a resposta não for "ok", dispara um erro
+          throw new Error("Erro ao salvar contato");
+        }
+        resolve(res);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    return promise;
+  };
+
   const handleEditModalDelete = async () => {
-    const res = await toast.promise(
-      fetch(`/api/contato/${selectedContato?.id}`, {
-        method: "DELETE",
-      }),
-      {
+    try {
+      const res: any = await toast.promise(deleteContato(), {
         pending: "deletando",
         success: "deletado",
         error: "Não foi possível deletar, tente novamente",
+      });
+      if (res.ok) {
+        const updatedContatos = contatos.filter(
+          (c) => c.id !== selectedContato?.id
+        );
+        // atualizar o estado dos contatos com os dados atualizados
+        setContatos(updatedContatos);
+        setSelectedContato(null);
+        setEditModalOpen(false);
       }
-    );
-    if (res.ok) {
-      const updatedContatos = contatos.filter(
-        (c) => c.id !== selectedContato?.id
-      );
-      setContatos(updatedContatos);
-      setSelectedContato(null);
-      setEditModalOpen(false);
+    } catch (error) {
+      console.error(error);
     }
   };
 
+  const saveContato = async () => {
+    const telefones = selectedContato?.telefones.map(
+      (tel: Telefone) => tel.numero
+    );
+    const dataToCreate = {
+      nome: selectedContato?.nome,
+      idade: selectedContato?.idade,
+      telefones: telefones,
+    };
+
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        const res = await fetch("/api/contato/", {
+          method: "POST",
+          body: JSON.stringify(dataToCreate),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!res.ok) {
+          // Se a resposta não for "ok", dispara um erro
+          throw new Error("Erro ao salvar contato");
+        }
+        const data: Contato = await res.json();
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    return promise;
+  };
+
   const handleCreateSave = async () => {
-    const res = await toast.promise(
-      fetch("/api/contato/", {
-        method: "POST",
-        body: JSON.stringify(selectedContato),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-      {
+    try {
+      const data: any = await toast.promise(saveContato(), {
         pending: "Salvando",
         success: "Salvo",
         error: "Não foi possível salvar, tente novamente",
-      }
-    );
-    const data = await res.json();
-    // atualizar o estado dos contatos com os dados atualizados
-    setContatos((contatos) => [...contatos, { ...data, telefones: [] }]);
-    setCreateModalOpen(false);
+      });
+      // atualizar o estado dos contatos com os dados atualizados
+      setContatos((contatos) => [...contatos, { ...data }]);
+      setCreateModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
@@ -215,23 +271,54 @@ const ListarContatos = () => {
               {selectedContato?.telefones?.map(
                 (telefone: Telefone, index: number) => {
                   return (
-                    <TextField
-                      key={index}
-                      label={`Telefone ${index + 1}`}
-                      value={telefone.numero}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setSelectedContato({
-                          ...selectedContato,
-                          telefones: selectedContato.telefones.map(
-                            (t: Telefone, i: number) =>
-                              i === index ? { ...t, numero: e.target.value } : t
-                          ),
-                        })
-                      }
-                    />
+                    <ContainerTelefoneStyled key={index}>
+                      <TextField
+                        className="input"
+                        label={`Telefone ${index + 1}`}
+                        value={telefone.numero}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setSelectedContato({
+                            ...selectedContato,
+                            telefones: selectedContato.telefones.map(
+                              (t: Telefone, i: number) =>
+                                i === index
+                                  ? { ...t, numero: e.target.value }
+                                  : t
+                            ),
+                          })
+                        }
+                      />
+                      <Button
+                        className="removeInput"
+                        variant="contained"
+                        onClick={() => {
+                          setSelectedContato({
+                            ...selectedContato,
+                            telefones: selectedContato.telefones.filter(
+                              (t: Telefone, i: number) => i !== index
+                            ),
+                          });
+                        }}
+                      >
+                        <GrClose />
+                      </Button>
+                    </ContainerTelefoneStyled>
                   );
                 }
               )}
+              <Button
+                variant="contained"
+                onClick={() =>
+                  setSelectedContato((contato: Contato) => {
+                    return {
+                      ...contato,
+                      telefones: [...contato.telefones, { numero: "" }],
+                    };
+                  })
+                }
+              >
+                Novo numero
+              </Button>
             </div>
             <div className="buttons">
               <Button variant="contained" onClick={handleEditModalSave}>
@@ -248,12 +335,23 @@ const ListarContatos = () => {
           </div>
         </ContainerModalStyled>
       </Modal>
-      <Modal open={createModalOpen} onClose={() => setCreateModalOpen(false)}>
+      <Modal
+        open={createModalOpen}
+        onClose={() => {
+          setCreateModalOpen(false);
+          setSelectedContato(null);
+        }}
+      >
         <ContainerModalStyled>
           <div className="container">
             <div className="headerModal">
               <h2>Criar Contato</h2>
-              <Button onClick={() => setCreateModalOpen(false)}>
+              <Button
+                onClick={() => {
+                  setCreateModalOpen(false);
+                  setSelectedContato(null);
+                }}
+              >
                 <GrClose />
               </Button>
             </div>
@@ -278,16 +376,65 @@ const ListarContatos = () => {
                   })
                 }
               />
-              <TextField
-                label="Telefones"
-                value={selectedContato?.telefones?.join(", ") || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    telefones: e.target.value.split(", "),
+              {selectedContato?.telefones?.map(
+                (telefone: Telefone, index: number) => {
+                  return (
+                    <ContainerTelefoneStyled key={index}>
+                      <TextField
+                        className="input"
+                        label={`Telefone ${index + 1}`}
+                        value={telefone.numero}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setSelectedContato({
+                            ...selectedContato,
+                            telefones: selectedContato.telefones.map(
+                              (t: Telefone, i: number) =>
+                                i === index
+                                  ? { ...t, numero: e.target.value }
+                                  : t
+                            ),
+                          })
+                        }
+                      />
+                      <Button
+                        className="removeInput"
+                        variant="contained"
+                        onClick={() => {
+                          setSelectedContato({
+                            ...selectedContato,
+                            telefones: selectedContato.telefones.filter(
+                              (t: Telefone, i: number) => i !== index
+                            ),
+                          });
+                        }}
+                      >
+                        <GrClose />
+                      </Button>
+                    </ContainerTelefoneStyled>
+                  );
+                }
+              )}
+              <Button
+                variant="contained"
+                onClick={() =>
+                  setSelectedContato((contato: Contato) => {
+                    if (selectedContato === null) {
+                      return {
+                        nome: "",
+                        idade: "",
+                        telefones: [{ numero: "" }],
+                      };
+                    }
+                    console.log(contato);
+                    return {
+                      ...contato,
+                      telefones: [...contato.telefones, { numero: "" }],
+                    };
                   })
                 }
-              />
+              >
+                Novo numero
+              </Button>
             </div>
             <div className="buttons">
               <Button variant="contained" onClick={handleCreateSave}>

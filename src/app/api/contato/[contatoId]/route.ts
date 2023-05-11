@@ -22,14 +22,51 @@ export async function PATCH(
   }
 
   try {
-    const { nome, idade, ...rest } = data;
+    const { nome, idade, telefones = [], ...rest } = data;
+    await Promise.all(
+      telefones.map(async (telefone: { id?: number; numero: string }) => {
+        if (telefone.id) {
+          const existingTelefone = await prisma.telefone.findFirst({
+            where: {
+              id: telefone.id,
+              contato: { id: Number(params.contatoId) },
+            },
+          });
+          if (!existingTelefone) {
+            throw new Error("Telefone não encontrado");
+          }
+
+          // Se o telefone já existe no banco, faz a atualização pelo ID
+          return prisma.telefone.update({
+            where: { id: telefone.id },
+            data: { numero: telefone.numero },
+          });
+        } else {
+          // Se o telefone não existe no banco, faz a criação de um novo telefone
+          return prisma.telefone.create({
+            data: {
+              numero: telefone.numero,
+              contato: { connect: { id: Number(params.contatoId) } },
+            },
+          });
+        }
+      })
+    );
+
+    // Faz a atualização do contato
     const contato = await prisma.contato.update({
       where: { id: Number(params.contatoId) },
       data: { nome, idade },
+      include: { telefones: true },
     });
     return new Response(JSON.stringify(contato), { status: 200 });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
+    if (error.message === "Telefone não encontrado") {
+      return new Response(JSON.stringify({ message: error.message }), {
+        status: 404,
+      });
+    }
     return new Response(JSON.stringify({ message: "Contato não encontrado" }), {
       status: 404,
     });
@@ -45,6 +82,10 @@ export async function DELETE(
   }
 ) {
   try {
+    const telefones = await prisma.telefone.deleteMany({
+      where: { idContato: Number(params.contatoId) },
+    });
+
     const contato = await prisma.contato.delete({
       where: { id: Number(params.contatoId) },
     });
@@ -53,6 +94,7 @@ export async function DELETE(
     );
     return new Response(null, { status: 204 });
   } catch (error) {
+    console.log(error);
     return new Response(JSON.stringify({ message: "Contato não encontrado" }), {
       status: 404,
     });
