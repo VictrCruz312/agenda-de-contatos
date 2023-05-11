@@ -1,3 +1,4 @@
+import logger from "@/utils/logger";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -47,6 +48,9 @@ export async function DELETE(
     const contato = await prisma.contato.delete({
       where: { id: Number(params.contatoId) },
     });
+    logger.info(
+      `Contato de nome, '${contato.nome}' e idade, '${contato.idade}' excluído`
+    );
     return new Response(null, { status: 204 });
   } catch (error) {
     return new Response(JSON.stringify({ message: "Contato não encontrado" }), {
