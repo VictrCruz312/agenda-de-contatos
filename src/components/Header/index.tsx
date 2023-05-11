@@ -6,6 +6,13 @@ import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
 import { alpha, styled } from "@mui/material/styles";
 import { HiOutlineMenu, HiSearch } from "react-icons/hi";
+import { ISearch } from "../ListarContatos";
+import { Checkbox, FormControlLabel } from "@mui/material";
+
+interface IPropsHeader {
+  setSearch: React.Dispatch<React.SetStateAction<ISearch>>;
+  search: ISearch;
+}
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -46,7 +53,16 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
-export default function Header() {
+export default function Header({ setSearch, search }: IPropsHeader) {
+  const handleSearchTypeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const searchType = event.target.checked ? "telefone" : "nome";
+    setSearch((search) => {
+      return { ...search, searchType };
+    });
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -66,6 +82,17 @@ export default function Header() {
         >
           Lista de contatos
         </Typography>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={search.searchType === "telefone"}
+              onChange={handleSearchTypeChange}
+              name="searchTypeCheckbox"
+              color="secondary"
+            />
+          }
+          label="Marque para pesquisar pelo telefone"
+        />
         <Search>
           <SearchIconWrapper>
             <HiSearch />
@@ -73,6 +100,11 @@ export default function Header() {
           <StyledInputBase
             placeholder="Pesquisar…"
             inputProps={{ "aria-label": "Pesquisar" }}
+            onChange={(e) =>
+              setSearch((search: ISearch) => {
+                return { ...search, value: e.target.value };
+              })
+            }
           />
         </Search>
       </Toolbar>

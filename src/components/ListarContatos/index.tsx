@@ -13,6 +13,7 @@ import { ContainerModalStyled, ListContatosStyled } from "./style";
 import { GrClose } from "react-icons/gr";
 import { IoAddOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
+import Header from "../Header";
 
 type Contato = {
   id: number;
@@ -21,16 +22,22 @@ type Contato = {
   telefones: string[];
 };
 
+export type ISearch = {
+  value?: string;
+  searchType: "nome" | "telefone";
+};
+
 const ListarContatos = () => {
   const [contatos, setContatos] = useState<Contato[]>([]);
   const [selectedContato, setSelectedContato] = useState<Contato | any>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [search, setSearch] = useState<ISearch>({ searchType: "nome" });
+  const [filteredContatos, setFilteredContatos] = useState<Contato[]>([]);
 
   const fetchContatos = async () => {
     const query = new URLSearchParams({
-      // nome: "",
-      // idade: "",
+      // ...search,
     });
     const res = await fetch(`/api/contato?${query}`);
     const data = await res.json();
@@ -40,6 +47,26 @@ const ListarContatos = () => {
   useEffect(() => {
     fetchContatos();
   }, []);
+
+  useEffect(() => {
+    const filtered = contatos.filter((contato) => {
+      if (search.value) {
+        if (search.searchType === "nome") {
+          return contato.nome
+            .toLowerCase()
+            .includes(search.value.toLowerCase());
+        } else if (search.searchType === "telefone") {
+          return contato.telefones.some((telefone) =>
+            telefone.toLowerCase().includes(search.value!.toLowerCase())
+          );
+        }
+      } else {
+        return true;
+      }
+    });
+
+    setFilteredContatos(filtered);
+  }, [search, contatos]);
 
   const handleEditModalSave = async () => {
     const res = await toast.promise(
@@ -108,6 +135,7 @@ const ListarContatos = () => {
 
   return (
     <>
+      <Header setSearch={setSearch} search={search} />
       <ListContatosStyled>
         <button
           className="createButton"
@@ -117,7 +145,7 @@ const ListarContatos = () => {
           {}
         </button>
         <List className="list">
-          {contatos.map((contato) => (
+          {filteredContatos.map((contato) => (
             <ListItem className="listItem" key={contato.id}>
               <ListItemButton
                 className="listItemButton"
