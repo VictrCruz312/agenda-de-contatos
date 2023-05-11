@@ -8,6 +8,7 @@ import { alpha, styled } from "@mui/material/styles";
 import { HiOutlineMenu, HiSearch } from "react-icons/hi";
 import { ISearch } from "../ListarContatos";
 import { Checkbox, FormControlLabel } from "@mui/material";
+import { ContainerSearchBar } from "./style";
 
 interface IPropsHeader {
   setSearch: React.Dispatch<React.SetStateAction<ISearch>>;
@@ -65,16 +66,7 @@ export default function Header({ setSearch, search }: IPropsHeader) {
 
   return (
     <AppBar position="static">
-      <Toolbar>
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          sx={{ mr: 2 }}
-        >
-          <HiOutlineMenu />
-        </IconButton>
+      <Toolbar style={{ justifyContent: "center" }}>
         <Typography
           variant="h6"
           component="div"
@@ -82,35 +74,38 @@ export default function Header({ setSearch, search }: IPropsHeader) {
         >
           Lista de contatos
         </Typography>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={search.searchType === "telefone"}
-              onChange={handleSearchTypeChange}
-              name="searchTypeCheckbox"
-              color="secondary"
+        <ContainerSearchBar>
+          <Search>
+            <SearchIconWrapper>
+              <HiSearch />
+            </SearchIconWrapper>
+            <StyledInputBase
+              placeholder={
+                search.searchType === "telefone"
+                  ? "Pesquisar telefone..."
+                  : "Pesquisar nome..."
+              }
+              inputProps={{ "aria-label": "Pesquisar" }}
+              onChange={(e) =>
+                setSearch((search: ISearch) => {
+                  return { ...search, value: e.target.value };
+                })
+              }
             />
-          }
-          label="Marque para pesquisar pelo telefone"
-        />
-        <Search>
-          <SearchIconWrapper>
-            <HiSearch />
-          </SearchIconWrapper>
-          <StyledInputBase
-            placeholder={
-              search.searchType === "telefone"
-                ? "Pesquisar telefone..."
-                : "Pesquisar nome..."
+          </Search>
+          <FormControlLabel
+            className="checkboxSearch"
+            control={
+              <Checkbox
+                checked={search.searchType === "telefone"}
+                onChange={handleSearchTypeChange}
+                name="searchTypeCheckbox"
+                color="secondary"
+              />
             }
-            inputProps={{ "aria-label": "Pesquisar" }}
-            onChange={(e) =>
-              setSearch((search: ISearch) => {
-                return { ...search, value: e.target.value };
-              })
-            }
+            label="Marque para pesquisar pelo telefone"
           />
-        </Search>
+        </ContainerSearchBar>
       </Toolbar>
     </AppBar>
   );

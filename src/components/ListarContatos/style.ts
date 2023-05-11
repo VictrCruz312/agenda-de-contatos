@@ -12,36 +12,45 @@ export const ContainerModalStyled = styled.div`
   justify-content: center;
   align-items: center;
 
+  @media screen and (max-width: 768px) {
+    left: calc(100vw - 99vw);
+    right: calc(100vw - 99vw);
+  }
+
   .container {
     width: 80vw;
     height: 60vh;
 
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
 
     background: #f1f1f1;
-    border-radius: 10px;
-    padding: 10px;
+    border-radius: 0.625rem;
+    padding: 0.625rem;
+
+    @media screen and (max-width: 768px) {
+      width: 96vw;
+    }
 
     .headerModal {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 10px;
+      padding: 0.3125rem 0.625rem;
 
       svg {
-        width: 20px;
-        height: 20px;
+        width: 1.25rem;
+        height: 1.25rem;
       }
     }
 
     .inputs {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 0.625rem;
 
-      padding: 20px 0;
+      padding: 1.25rem 0;
       overflow-y: auto;
     }
 
@@ -49,7 +58,7 @@ export const ContainerModalStyled = styled.div`
       margin-top: auto;
       display: flex;
       justify-content: space-between;
-      padding: 0 20px 20px 20px;
+      padding: 0 1.25rem 1.25rem 1.25rem;
 
       .delete {
         background: red;
@@ -64,15 +73,16 @@ export const ListContatosStyled = withTheme(styled.div`
 
   .createButton {
     position: fixed;
-    bottom: 50px;
-    right: 30px;
+    bottom: 3.125rem;
+    right: 1.875rem;
     align-self: flex-end;
+    z-index: 3;
 
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 60px;
-    height: 60px;
+    width: 3.75rem;
+    height: 3.75rem;
 
     margin: 0;
     padding: 0 0 0 0;
@@ -85,7 +95,7 @@ export const ListContatosStyled = withTheme(styled.div`
 
     &:hover {
       opacity: 0.8;
-      border-radius: 10px;
+      border-radius: 0.625rem;
       background: ${(props) => props.theme.palette.primary.main};
       transition: 0.2s ease-in-out;
 
@@ -96,8 +106,8 @@ export const ListContatosStyled = withTheme(styled.div`
     }
 
     svg {
-      width: 60px;
-      height: 60px;
+      width: 3.75rem;
+      height: 3.75rem;
       color: ${(props) => props.theme.palette.primary.main};
     }
 
@@ -109,7 +119,7 @@ export const ListContatosStyled = withTheme(styled.div`
   .list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
     align-items: center;
 
     width: 100vw;
@@ -118,27 +128,30 @@ export const ListContatosStyled = withTheme(styled.div`
 
     .listItem {
       width: 80%;
+      @media screen and (max-width: 768px) {
+        width: 99%;
+      }
 
       .listItemButton {
         background: #f2f2f2;
-        border-radius: 10px;
+        border-radius: 0.625rem;
 
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 0.625rem;
 
         color: ${(props) => props.theme.palette.text.primary};
         border: 2px solid ${(props) => props.theme.palette.primary.main};
-        box-shadow: inset 5px -9px 20px 0px ${(props) => props.theme.palette.text.disabled};
+        box-shadow: inset 5px -9px 1.25rem 0px ${(props) => props.theme.palette.text.disabled};
         font-size: 18px;
         font-weight: 700;
 
         .container {
           display: flex;
-          gap: 10px;
+          gap: 0.625rem;
           position: absolute;
-          top: 10px;
-          left: 20px;
+          top: 0.625rem;
+          left: 1.25rem;
           z-index: 2;
           width: 88%;
 
@@ -150,14 +163,14 @@ export const ListContatosStyled = withTheme(styled.div`
         }
 
         .telefones {
-          padding: 40px 0 10px 20px;
-          max-height: 110px;
+          padding: 2.5rem 0 0.625rem 1.25rem;
+          max-height: 6.875rem;
           overflow: auto;
           z-index: 1;
 
           display: flex;
           flex-wrap: wrap;
-          gap: 15px;
+          gap: 0.9375rem;
 
           width: 100%;
 
@@ -172,7 +185,7 @@ export const ListContatosStyled = withTheme(styled.div`
 
 export const ContainerTelefoneStyled = withTheme(styled.div`
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 
   .input {
     width: 100%;
