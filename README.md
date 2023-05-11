@@ -27,7 +27,7 @@ Para instalar as dependências, execute o comando:
 yarn
 ```
 
-Configuração
+## Configuração
 
 Crie um arquivo chamado .env na raiz do projeto e defina a variável DATABASE_URL com a URL de conexão do seu banco de dados PostgreSQL. Exemplo:
 
@@ -35,6 +35,11 @@ Crie um arquivo chamado .env na raiz do projeto e defina a variável DATABASE_UR
 DATABASE_URL=postgresql://user:password@localhost:5432/mydatabase
 ```
 Substitua user, password e mydatabase pelos valores correspondentes do seu banco de dados PostgreSQL.
+
+- E preciso rodar as migrations para criar as tabelas no banco de dados (esse passo só deve ser feito caso ainda não tenha as tabelas criadas no banco)
+```bash
+npx prisma migrate dev
+```
 
 ### Você pode utilizar o database_url abaixo para conexão com banco que está dispónivel no render.com:
 ```bash
