@@ -19,6 +19,8 @@ import { IoAddOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import Header from "../Header";
 import { Telefone } from "@prisma/client";
+import { contatoSchema, formatPhoneNumber } from "../../schema";
+import { getIn } from "yup";
 
 type Contato = {
   id: number;
@@ -39,6 +41,7 @@ const ListarContatos = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [search, setSearch] = useState<ISearch>({ searchType: "nome" });
   const [filteredContatos, setFilteredContatos] = useState<Contato[]>([]);
+  const [errors, setErrors] = useState<any>({});
 
   const fetchContatos = async () => {
     const query = new URLSearchParams({
@@ -52,6 +55,10 @@ const ListarContatos = () => {
   useEffect(() => {
     fetchContatos();
   }, []);
+
+  useEffect(() => {
+    setErrors({});
+  }, [selectedContato]);
 
   useEffect(() => {
     if (createModalOpen) {
@@ -79,28 +86,63 @@ const ListarContatos = () => {
     setFilteredContatos(filtered);
   }, [search, contatos]);
 
-  const handleEditModalSave = async () => {
+  const validateForm = async () => {
     console.log(selectedContato);
-    const res = await toast.promise(
-      fetch(`/api/contato/${selectedContato?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(selectedContato),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-      {
+    try {
+      await contatoSchema.validate(selectedContato, { abortEarly: false });
+    } catch (error: any) {
+      const newErrors: any = {};
+      error.inner.forEach((fieldError: any) => {
+        newErrors[fieldError.path] = fieldError.message;
+      });
+      setErrors(newErrors);
+      throw new Error("campos inválidos");
+    }
+  };
+
+  const editContato = async () => {
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await validateForm();
+
+        const res = await fetch(`/api/contato/${selectedContato?.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(selectedContato),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!res.ok) {
+          // Se a resposta não for "ok", dispara um erro
+          throw new Error("Erro ao salvar contato");
+        }
+        const data: Contato = await res.json();
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    return promise;
+  };
+
+  const handleEditModalSave = async () => {
+    try {
+      const data: any = await toast.promise(editContato(), {
         pending: "Salvando",
         success: "Salvo",
         error: "Não foi possível salvar, tente novamente",
-      }
-    );
-    const data = await res.json();
-    // atualizar o estado dos contatos com os dados atualizados
-    const updatedContatos = contatos.map((c) => (c.id === data.id ? data : c));
-    setContatos(updatedContatos);
-    setSelectedContato(null);
-    setEditModalOpen(false);
+      });
+
+      // atualizar o estado dos contatos com os dados atualizados
+      const updatedContatos = contatos.map((c) =>
+        c.id === data.id ? data : c
+      );
+      setContatos(updatedContatos);
+      setSelectedContato(null);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const deleteContato = async () => {
@@ -109,7 +151,6 @@ const ListarContatos = () => {
         const res = await fetch(`/api/contato/${selectedContato?.id}`, {
           method: "DELETE",
         });
-        console.log("1213", res);
         if (!res.ok) {
           // Se a resposta não for "ok", dispara um erro
           throw new Error("Erro ao salvar contato");
@@ -155,6 +196,7 @@ const ListarContatos = () => {
 
     const promise = new Promise(async (resolve, reject) => {
       try {
+        await validateForm();
         const res = await fetch("/api/contato/", {
           method: "POST",
           body: JSON.stringify(dataToCreate),
@@ -218,7 +260,7 @@ const ListarContatos = () => {
                 <div className="telefones">
                   {contato.telefones.map((telefone, index) => (
                     <p key={index}>
-                      telefone {index + 1}: {telefone.numero}
+                      telefone {index + 1}: {formatPhoneNumber(telefone.numero)}
                     </p>
                   ))}
                 </div>
@@ -258,6 +300,8 @@ const ListarContatos = () => {
                 <TextField
                   label="Nome"
                   required
+                  error={Boolean(errors.nome)}
+                  helperText={errors.nome}
                   value={selectedContato?.nome || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSelectedContato({
@@ -269,6 +313,8 @@ const ListarContatos = () => {
                 <TextField
                   label="Idade"
                   required
+                  error={Boolean(errors.idade)}
+                  helperText={errors.idade}
                   value={selectedContato?.idade || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSelectedContato({
@@ -279,20 +325,28 @@ const ListarContatos = () => {
                 />
                 {selectedContato?.telefones?.map(
                   (telefone: Telefone, index: number) => {
+                    const telefoneError = errors[`telefones[${index}].numero`];
                     return (
                       <ContainerTelefoneStyled key={index}>
                         <TextField
                           className="input"
                           label={`Telefone ${index + 1}`}
                           required
-                          value={telefone.numero}
+                          value={formatPhoneNumber(telefone.numero)}
+                          error={Boolean(telefoneError)}
+                          helperText={telefoneError}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setSelectedContato({
                               ...selectedContato,
                               telefones: selectedContato.telefones.map(
                                 (t: Telefone, i: number) =>
                                   i === index
-                                    ? { ...t, numero: e.target.value }
+                                    ? {
+                                        ...t,
+                                        numero: formatPhoneNumber(
+                                          e.target.value
+                                        ),
+                                      }
                                     : t
                               ),
                             })
@@ -377,6 +431,8 @@ const ListarContatos = () => {
                 <TextField
                   label="Nome"
                   required
+                  error={Boolean(errors.nome)}
+                  helperText={errors.nome}
                   value={selectedContato?.nome || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSelectedContato({
@@ -388,6 +444,8 @@ const ListarContatos = () => {
                 <TextField
                   label="Idade"
                   required
+                  error={Boolean(errors.idade)}
+                  helperText={errors.idade}
                   value={selectedContato?.idade || ""}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setSelectedContato({
@@ -398,20 +456,28 @@ const ListarContatos = () => {
                 />
                 {selectedContato?.telefones?.map(
                   (telefone: Telefone, index: number) => {
+                    const telefoneError = errors[`telefones[${index}].numero`];
                     return (
                       <ContainerTelefoneStyled key={index}>
                         <TextField
                           className="input"
                           label={`Telefone ${index + 1}`}
                           required
-                          value={telefone.numero}
+                          value={formatPhoneNumber(telefone.numero)}
+                          error={Boolean(telefoneError)}
+                          helperText={telefoneError}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setSelectedContato({
                               ...selectedContato,
                               telefones: selectedContato.telefones.map(
                                 (t: Telefone, i: number) =>
                                   i === index
-                                    ? { ...t, numero: e.target.value }
+                                    ? {
+                                        ...t,
+                                        numero: formatPhoneNumber(
+                                          e.target.value
+                                        ),
+                                      }
                                     : t
                               ),
                             })
