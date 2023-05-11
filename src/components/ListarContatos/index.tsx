@@ -247,92 +247,103 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <div className="inputs">
-              <TextField
-                label="Nome"
-                value={selectedContato?.nome || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    nome: e.target.value,
-                  })
-                }
-              />
-              <TextField
-                label="Idade"
-                value={selectedContato?.idade || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    idade: parseInt(e.target.value),
-                  })
-                }
-              />
-              {selectedContato?.telefones?.map(
-                (telefone: Telefone, index: number) => {
-                  return (
-                    <ContainerTelefoneStyled key={index}>
-                      <TextField
-                        className="input"
-                        label={`Telefone ${index + 1}`}
-                        value={telefone.numero}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.map(
-                              (t: Telefone, i: number) =>
-                                i === index
-                                  ? { ...t, numero: e.target.value }
-                                  : t
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        className="removeInput"
-                        variant="text"
-                        onClick={() => {
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.filter(
-                              (t: Telefone, i: number) => i !== index
-                            ),
-                          });
-                        }}
-                      >
-                        <GrClose />
-                      </Button>
-                    </ContainerTelefoneStyled>
-                  );
-                }
-              )}
-              <Button
-                className="buttonAddNumber"
-                variant="text"
-                onClick={() =>
-                  setSelectedContato((contato: Contato) => {
-                    return {
-                      ...contato,
-                      telefones: [...contato.telefones, { numero: "" }],
-                    };
-                  })
-                }
-              >
-                Adicionar novo numero
-              </Button>
-            </div>
-            <div className="buttons">
-              <Button variant="contained" onClick={handleEditModalSave}>
-                Salvar
-              </Button>
-              <Button
-                className="delete"
-                variant="contained"
-                onClick={handleEditModalDelete}
-              >
-                Excluir
-              </Button>
-            </div>
+            <form
+              className="form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleEditModalSave();
+              }}
+            >
+              <div className="inputs">
+                <TextField
+                  label="Nome"
+                  required
+                  value={selectedContato?.nome || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      nome: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Idade"
+                  required
+                  value={selectedContato?.idade || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      idade: parseInt(e.target.value),
+                    })
+                  }
+                />
+                {selectedContato?.telefones?.map(
+                  (telefone: Telefone, index: number) => {
+                    return (
+                      <ContainerTelefoneStyled key={index}>
+                        <TextField
+                          className="input"
+                          label={`Telefone ${index + 1}`}
+                          required
+                          value={telefone.numero}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.map(
+                                (t: Telefone, i: number) =>
+                                  i === index
+                                    ? { ...t, numero: e.target.value }
+                                    : t
+                              ),
+                            })
+                          }
+                        />
+                        <Button
+                          className="removeInput"
+                          variant="text"
+                          onClick={() => {
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.filter(
+                                (t: Telefone, i: number) => i !== index
+                              ),
+                            });
+                          }}
+                        >
+                          <GrClose />
+                        </Button>
+                      </ContainerTelefoneStyled>
+                    );
+                  }
+                )}
+                <Button
+                  className="buttonAddNumber"
+                  variant="text"
+                  onClick={() =>
+                    setSelectedContato((contato: Contato) => {
+                      return {
+                        ...contato,
+                        telefones: [...contato.telefones, { numero: "" }],
+                      };
+                    })
+                  }
+                >
+                  Adicionar novo numero
+                </Button>
+              </div>
+              <div className="buttons">
+                <Button variant="contained" type="submit">
+                  Salvar
+                </Button>
+                <Button
+                  className="delete"
+                  variant="contained"
+                  onClick={handleEditModalDelete}
+                >
+                  Excluir
+                </Button>
+              </div>
+            </form>
           </div>
         </ContainerModalStyled>
       </Modal>
@@ -356,93 +367,103 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <div className="inputs">
-              <TextField
-                label="Nome"
-                value={selectedContato?.nome || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    nome: e.target.value,
-                  })
-                }
-              />
-              <TextField
-                label="Idade"
-                value={selectedContato?.idade || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    idade: parseInt(e.target.value),
-                  })
-                }
-              />
-              {selectedContato?.telefones?.map(
-                (telefone: Telefone, index: number) => {
-                  return (
-                    <ContainerTelefoneStyled key={index}>
-                      <TextField
-                        className="input"
-                        label={`Telefone ${index + 1}`}
-                        value={telefone.numero}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.map(
-                              (t: Telefone, i: number) =>
-                                i === index
-                                  ? { ...t, numero: e.target.value }
-                                  : t
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        className="removeInput"
-                        variant="text"
-                        onClick={() => {
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.filter(
-                              (t: Telefone, i: number) => i !== index
-                            ),
-                          });
-                        }}
-                      >
-                        <GrClose />
-                      </Button>
-                    </ContainerTelefoneStyled>
-                  );
-                }
-              )}
-              <Button
-                className="buttonAddNumber"
-                variant="text"
-                onClick={() =>
-                  setSelectedContato((contato: Contato) => {
-                    if (selectedContato === null) {
-                      return {
-                        nome: "",
-                        idade: "",
-                        telefones: [{ numero: "" }],
-                      };
-                    }
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateSave();
+              }}
+            >
+              <div className="inputs">
+                <TextField
+                  label="Nome"
+                  required
+                  value={selectedContato?.nome || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      nome: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Idade"
+                  required
+                  value={selectedContato?.idade || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      idade: parseInt(e.target.value),
+                    })
+                  }
+                />
+                {selectedContato?.telefones?.map(
+                  (telefone: Telefone, index: number) => {
+                    return (
+                      <ContainerTelefoneStyled key={index}>
+                        <TextField
+                          className="input"
+                          label={`Telefone ${index + 1}`}
+                          required
+                          value={telefone.numero}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.map(
+                                (t: Telefone, i: number) =>
+                                  i === index
+                                    ? { ...t, numero: e.target.value }
+                                    : t
+                              ),
+                            })
+                          }
+                        />
+                        <Button
+                          className="removeInput"
+                          variant="text"
+                          onClick={() => {
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.filter(
+                                (t: Telefone, i: number) => i !== index
+                              ),
+                            });
+                          }}
+                        >
+                          <GrClose />
+                        </Button>
+                      </ContainerTelefoneStyled>
+                    );
+                  }
+                )}
+                <Button
+                  className="buttonAddNumber"
+                  variant="text"
+                  onClick={() =>
+                    setSelectedContato((contato: Contato) => {
+                      if (selectedContato === null) {
+                        return {
+                          nome: "",
+                          idade: "",
+                          telefones: [{ numero: "" }],
+                        };
+                      }
 
-                    return {
-                      ...contato,
-                      telefones: [...contato.telefones, { numero: "" }],
-                    };
-                  })
-                }
-              >
-                adicionar novo numero
-              </Button>
-            </div>
-            <div className="buttons">
-              <Button variant="contained" onClick={handleCreateSave}>
-                Salvar
-              </Button>
-            </div>
+                      return {
+                        ...contato,
+                        telefones: [...contato.telefones, { numero: "" }],
+                      };
+                    })
+                  }
+                >
+                  adicionar novo numero
+                </Button>
+              </div>
+              <div className="buttons">
+                <Button variant="contained" type="submit">
+                  Salvar
+                </Button>
+              </div>
+            </form>
           </div>
         </ContainerModalStyled>
       </Modal>

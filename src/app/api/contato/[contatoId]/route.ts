@@ -1,5 +1,5 @@
 import logger from "@/utils/logger";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Telefone } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -23,19 +23,29 @@ export async function PATCH(
 
   try {
     const { nome, idade, telefones = [], ...rest } = data;
+
+    // Obtém todos os telefones do contato
+    const existingTelefones = await prisma.telefone.findMany({
+      where: {
+        contato: { id: Number(params.contatoId) },
+      },
+    });
+
     await Promise.all(
       telefones.map(async (telefone: { id?: number; numero: string }) => {
         if (telefone.id) {
-          const existingTelefone = await prisma.telefone.findFirst({
-            where: {
-              id: telefone.id,
-              contato: { id: Number(params.contatoId) },
-            },
-          });
+          const existingTelefone = existingTelefones.find(
+            (t) => t.id === telefone.id
+          );
           if (!existingTelefone) {
             throw new Error("Telefone não encontrado");
           }
 
+          if (telefone.numero === "") {
+            return prisma.telefone.delete({
+              where: { id: telefone.id },
+            });
+          }
           // Se o telefone já existe no banco, faz a atualização pelo ID
           return prisma.telefone.update({
             where: { id: telefone.id },
@@ -48,6 +58,20 @@ export async function PATCH(
               numero: telefone.numero,
               contato: { connect: { id: Number(params.contatoId) } },
             },
+          });
+        }
+      })
+    );
+
+    // Deleta os telefones que não foram passados no array telefones
+    await Promise.all(
+      existingTelefones.map(async (existingTelefone) => {
+        const telefoneExistenteNoArray = telefones.find(
+          (t: Telefone) => t.id === existingTelefone.id
+        );
+        if (!telefoneExistenteNoArray) {
+          return prisma.telefone.delete({
+            where: { id: existingTelefone.id },
           });
         }
       })

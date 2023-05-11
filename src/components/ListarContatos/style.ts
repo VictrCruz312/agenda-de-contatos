@@ -50,6 +50,7 @@ export const ContainerModalStyled = styled.div`
       flex-direction: column;
       gap: 0.625rem;
 
+      height: 341px;
       padding: 1.25rem 0;
       overflow-y: auto;
 
