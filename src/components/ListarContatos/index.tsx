@@ -12,6 +12,7 @@ import {
 import { ContainerModalStyled, ListContatosStyled } from "./style";
 import { GrClose } from "react-icons/gr";
 import { IoAddOutline } from "react-icons/io5";
+import { toast } from "react-toastify";
 
 type Contato = {
   id: number;
@@ -40,33 +41,22 @@ const ListarContatos = () => {
     fetchContatos();
   }, []);
 
-  const handleContatoClick = (contato: Contato) => {
-    setSelectedContato(contato);
-    setEditModalOpen(true);
-  };
-
-  const handleCreateClick = () => {
-    setCreateModalOpen(true);
-  };
-
-  const handleEditModalClose = () => {
-    setEditModalOpen(false);
-  };
-
-  const handleCreateModalClose = () => {
-    setCreateModalOpen(false);
-  };
-
   const handleEditModalSave = async () => {
-    const res = await fetch(`/api/contato/${selectedContato?.id}`, {
-      method: "PATCH",
-      body: JSON.stringify(selectedContato),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const res = await toast.promise(
+      fetch(`/api/contato/${selectedContato?.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(selectedContato),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      {
+        pending: "Salvando",
+        success: "Salvo",
+        error: "Não foi possível salvar, tente novamente",
+      }
+    );
     const data = await res.json();
-    console.log(data);
     // atualizar o estado dos contatos com os dados atualizados
     const updatedContatos = contatos.map((c) => (c.id === data.id ? data : c));
     setContatos(updatedContatos);
@@ -75,9 +65,16 @@ const ListarContatos = () => {
   };
 
   const handleEditModalDelete = async () => {
-    const res = await fetch(`/api/contato/${selectedContato?.id}`, {
-      method: "DELETE",
-    });
+    const res = await toast.promise(
+      fetch(`/api/contato/${selectedContato?.id}`, {
+        method: "DELETE",
+      }),
+      {
+        pending: "deletando",
+        success: "deletado",
+        error: "Não foi possível deletar, tente novamente",
+      }
+    );
     if (res.ok) {
       const updatedContatos = contatos.filter(
         (c) => c.id !== selectedContato?.id
@@ -88,10 +85,34 @@ const ListarContatos = () => {
     }
   };
 
+  const handleCreateSave = async () => {
+    const res = await toast.promise(
+      fetch("/api/contato/", {
+        method: "POST",
+        body: JSON.stringify(selectedContato),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+      {
+        pending: "Salvando",
+        success: "Salvo",
+        error: "Não foi possível salvar, tente novamente",
+      }
+    );
+    const data = await res.json();
+    // atualizar o estado dos contatos com os dados atualizados
+    setContatos((contatos) => [...contatos, { ...data, telefones: [] }]);
+    setCreateModalOpen(false);
+  };
+
   return (
     <>
       <ListContatosStyled>
-        <button className="createButton" onClick={() => handleCreateClick()}>
+        <button
+          className="createButton"
+          onClick={() => setCreateModalOpen(true)}
+        >
           <IoAddOutline />
           {}
         </button>
@@ -100,7 +121,10 @@ const ListarContatos = () => {
             <ListItem className="listItem" key={contato.id}>
               <ListItemButton
                 className="listItemButton"
-                onClick={() => handleContatoClick(contato)}
+                onClick={() => {
+                  setSelectedContato(contato);
+                  setEditModalOpen(true);
+                }}
               >
                 <div className="container">
                   <p>{contato.nome}</p>
@@ -116,12 +140,23 @@ const ListarContatos = () => {
           ))}
         </List>
       </ListContatosStyled>
-      <Modal open={editModalOpen} onClose={handleEditModalClose}>
+      <Modal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedContato(null);
+        }}
+      >
         <ContainerModalStyled>
           <div className="container">
             <div className="headerModal">
               <h2>Editar Contato</h2>
-              <Button onClick={handleEditModalClose}>
+              <Button
+                onClick={() => {
+                  setEditModalOpen(false);
+                  setSelectedContato(null);
+                }}
+              >
                 <GrClose />
               </Button>
             </div>
@@ -170,12 +205,12 @@ const ListarContatos = () => {
           </div>
         </ContainerModalStyled>
       </Modal>
-      <Modal open={createModalOpen} onClose={handleCreateModalClose}>
+      <Modal open={createModalOpen} onClose={() => setCreateModalOpen(false)}>
         <ContainerModalStyled>
           <div className="container">
             <div className="headerModal">
               <h2>Criar Contato</h2>
-              <Button onClick={handleCreateModalClose}>
+              <Button onClick={() => setCreateModalOpen(false)}>
                 <GrClose />
               </Button>
             </div>
@@ -210,7 +245,7 @@ const ListarContatos = () => {
               }
             />
             <div className="buttons">
-              <Button variant="contained" onClick={handleEditModalSave}>
+              <Button variant="contained" onClick={handleCreateSave}>
                 Salvar
               </Button>
             </div>

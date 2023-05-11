@@ -65,12 +65,25 @@ export const ListContatosStyled = withTheme(styled.div`
     height: 60px;
 
     margin: 0;
-    padding: 0 0 0 3px;
+    padding: 0 0 0 0;
     border: none;
     cursor: pointer;
 
     border: 2px solid ${(props) => props.theme.palette.primary.main};
     border-radius: 10px;
+    transition: 0.2s ease-in-out;
+
+    &:hover {
+      opacity: 0.8;
+      border-radius: 10px;
+      background: ${(props) => props.theme.palette.primary.main};
+      transition: 0.2s ease-in-out;
+
+      svg {
+        color: ${(props) => props.theme.palette.background.paper};
+        transition: 0.2s ease-in-out;
+      }
+    }
 
     svg {
       width: 60px;
@@ -78,7 +91,7 @@ export const ListContatosStyled = withTheme(styled.div`
       color: ${(props) => props.theme.palette.primary.main};
     }
 
-    &:focus {
+    :focus {
       outline: none;
     }
   }
