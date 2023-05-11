@@ -1,34 +1,63 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Documentação da Aplicação
 
-## Getting Started
+## Introdução
 
-First, run the development server:
+Esta é uma aplicação Next.js de uma agenda de contatos que utiliza o Prisma para acesso ao banco de dados. É possível realizar as operações básicas de CRUD (criação, leitura, atualização e exclusão) de contatos e seus respectivos telefones. A rota para a aplicação localmente é: 
+- front-end: [localhost:3000/](localhost:3000/)
+- api: [localhost:3000/](localhost:3000/api)
+
+## Pré-requisitos
+Antes de rodar a aplicação, certifique-se de ter as seguintes ferramentas instaladas:
+
+- Node.js (versão 18 ou superior)
+- Yarn (versão 1 ou superior)
+- Um banco de dados PostgreSQL 
+- caso não tenha o postgres pode usar este para testes: **postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti**
+
+Instalação
+
+Para instalar as dependências, execute o comando:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Configuração
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Crie um arquivo chamado .env na raiz do projeto e defina a variável DATABASE_URL com a URL de conexão do seu banco de dados PostgreSQL. Exemplo:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+DATABASE_URL=postgresql://user:password@localhost:5432/mydatabase
+```
+Substitua user, password e mydatabase pelos valores correspondentes do seu banco de dados PostgreSQL.
 
-## Learn More
+> Você pode utilizar o database_url abaixo para conexão com banco que está dispónivel no render.com:
+- **postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti**
 
-To learn more about Next.js, take a look at the following resources:
+## Execução em Desenvolvimento
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para executar a aplicação em modo de desenvolvimento, execute o comando:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```bash
+yarn dev
+```
 
-## Deploy on Vercel
+Acesse a aplicação em [http://localhost:3000](http://localhost:3000).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment
+Para executar a aplicação em produção, primeiro gere os arquivos estáticos com o comando **yarn build**, e então execute o comando:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+yarn start
+```
+Acesse a aplicação em [http://localhost:3000](http://localhost:3000).
+
+## Uso
+
+A aplicação permite a realização das seguintes operações:
+
+- Listar todos os contatos: GET /api/contato
+- Criar um contato: POST /api/contato
+- Ler um contato: GET /api/contato/:id
+- Atualizar um contato: PATCH /api/contato/:id
+- Deletar um contato: DELETE /api/contato/:id
