@@ -98,7 +98,11 @@ export default function Header({ setSearch, search }: IPropsHeader) {
             <HiSearch />
           </SearchIconWrapper>
           <StyledInputBase
-            placeholder="Pesquisar…"
+            placeholder={
+              search.searchType === "telefone"
+                ? "Pesquisar telefone..."
+                : "Pesquisar nome..."
+            }
             inputProps={{ "aria-label": "Pesquisar" }}
             onChange={(e) =>
               setSearch((search: ISearch) => {
