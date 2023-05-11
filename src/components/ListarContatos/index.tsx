@@ -19,6 +19,8 @@ import { IoAddOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import Header from "../Header";
 import { Telefone } from "@prisma/client";
+import { contatoSchema, formatPhoneNumber } from "../../schema";
+import { getIn } from "yup";
 
 type Contato = {
   id: number;
@@ -39,6 +41,7 @@ const ListarContatos = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [search, setSearch] = useState<ISearch>({ searchType: "nome" });
   const [filteredContatos, setFilteredContatos] = useState<Contato[]>([]);
+  const [errors, setErrors] = useState<any>({});
 
   const fetchContatos = async () => {
     const query = new URLSearchParams({
@@ -54,6 +57,10 @@ const ListarContatos = () => {
   }, []);
 
   useEffect(() => {
+    setErrors({});
+  }, [selectedContato]);
+
+  useEffect(() => {
     if (createModalOpen) {
       setSelectedContato({ nome: "", idade: "", telefones: [{ numero: "" }] });
     }
@@ -67,9 +74,12 @@ const ListarContatos = () => {
             .toLowerCase()
             .includes(search.value.toLowerCase());
         } else if (search.searchType === "telefone") {
-          return contato.telefones.some((telefone) =>
-            telefone.numero.toLowerCase().includes(search.value!.toLowerCase())
-          );
+          return contato.telefones.some((telefone) => {
+            return telefone.numero
+              .replace(/\D/g, "")
+              .toLowerCase()
+              .includes(search.value!.replace(/\D/g, "").toLowerCase());
+          });
         }
       } else {
         return true;
@@ -79,28 +89,63 @@ const ListarContatos = () => {
     setFilteredContatos(filtered);
   }, [search, contatos]);
 
-  const handleEditModalSave = async () => {
+  const validateForm = async () => {
     console.log(selectedContato);
-    const res = await toast.promise(
-      fetch(`/api/contato/${selectedContato?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(selectedContato),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-      {
+    try {
+      await contatoSchema.validate(selectedContato, { abortEarly: false });
+    } catch (error: any) {
+      const newErrors: any = {};
+      error.inner.forEach((fieldError: any) => {
+        newErrors[fieldError.path] = fieldError.message;
+      });
+      setErrors(newErrors);
+      throw new Error("campos inválidos");
+    }
+  };
+
+  const editContato = async () => {
+    const promise = new Promise(async (resolve, reject) => {
+      try {
+        await validateForm();
+
+        const res = await fetch(`/api/contato/${selectedContato?.id}`, {
+          method: "PATCH",
+          body: JSON.stringify(selectedContato),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!res.ok) {
+          // Se a resposta não for "ok", dispara um erro
+          throw new Error("Erro ao salvar contato");
+        }
+        const data: Contato = await res.json();
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    return promise;
+  };
+
+  const handleEditModalSave = async () => {
+    try {
+      const data: any = await toast.promise(editContato(), {
         pending: "Salvando",
         success: "Salvo",
         error: "Não foi possível salvar, tente novamente",
-      }
-    );
-    const data = await res.json();
-    // atualizar o estado dos contatos com os dados atualizados
-    const updatedContatos = contatos.map((c) => (c.id === data.id ? data : c));
-    setContatos(updatedContatos);
-    setSelectedContato(null);
-    setEditModalOpen(false);
+      });
+
+      // atualizar o estado dos contatos com os dados atualizados
+      const updatedContatos = contatos.map((c) =>
+        c.id === data.id ? data : c
+      );
+      setContatos(updatedContatos);
+      setSelectedContato(null);
+      setEditModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const deleteContato = async () => {
@@ -109,7 +154,6 @@ const ListarContatos = () => {
         const res = await fetch(`/api/contato/${selectedContato?.id}`, {
           method: "DELETE",
         });
-        console.log("1213", res);
         if (!res.ok) {
           // Se a resposta não for "ok", dispara um erro
           throw new Error("Erro ao salvar contato");
@@ -155,6 +199,7 @@ const ListarContatos = () => {
 
     const promise = new Promise(async (resolve, reject) => {
       try {
+        await validateForm();
         const res = await fetch("/api/contato/", {
           method: "POST",
           body: JSON.stringify(dataToCreate),
@@ -218,7 +263,7 @@ const ListarContatos = () => {
                 <div className="telefones">
                   {contato.telefones.map((telefone, index) => (
                     <p key={index}>
-                      telefone {index + 1}: {telefone.numero}
+                      telefone {index + 1}: {formatPhoneNumber(telefone.numero)}
                     </p>
                   ))}
                 </div>
@@ -247,92 +292,115 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <div className="inputs">
-              <TextField
-                label="Nome"
-                value={selectedContato?.nome || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    nome: e.target.value,
-                  })
-                }
-              />
-              <TextField
-                label="Idade"
-                value={selectedContato?.idade || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    idade: parseInt(e.target.value),
-                  })
-                }
-              />
-              {selectedContato?.telefones?.map(
-                (telefone: Telefone, index: number) => {
-                  return (
-                    <ContainerTelefoneStyled key={index}>
-                      <TextField
-                        className="input"
-                        label={`Telefone ${index + 1}`}
-                        value={telefone.numero}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.map(
-                              (t: Telefone, i: number) =>
-                                i === index
-                                  ? { ...t, numero: e.target.value }
-                                  : t
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        className="removeInput"
-                        variant="text"
-                        onClick={() => {
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.filter(
-                              (t: Telefone, i: number) => i !== index
-                            ),
-                          });
-                        }}
-                      >
-                        <GrClose />
-                      </Button>
-                    </ContainerTelefoneStyled>
-                  );
-                }
-              )}
-              <Button
-                className="buttonAddNumber"
-                variant="text"
-                onClick={() =>
-                  setSelectedContato((contato: Contato) => {
-                    return {
-                      ...contato,
-                      telefones: [...contato.telefones, { numero: "" }],
-                    };
-                  })
-                }
-              >
-                Adicionar novo numero
-              </Button>
-            </div>
-            <div className="buttons">
-              <Button variant="contained" onClick={handleEditModalSave}>
-                Salvar
-              </Button>
-              <Button
-                className="delete"
-                variant="contained"
-                onClick={handleEditModalDelete}
-              >
-                Excluir
-              </Button>
-            </div>
+            <form
+              className="form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleEditModalSave();
+              }}
+            >
+              <div className="inputs">
+                <TextField
+                  label="Nome"
+                  required
+                  error={Boolean(errors.nome)}
+                  helperText={errors.nome}
+                  value={selectedContato?.nome || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      nome: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Idade"
+                  required
+                  error={Boolean(errors.idade)}
+                  helperText={errors.idade}
+                  value={selectedContato?.idade || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      idade: parseInt(e.target.value),
+                    })
+                  }
+                />
+                {selectedContato?.telefones?.map(
+                  (telefone: Telefone, index: number) => {
+                    const telefoneError = errors[`telefones[${index}].numero`];
+                    return (
+                      <ContainerTelefoneStyled key={index}>
+                        <TextField
+                          className="input"
+                          label={`Telefone ${index + 1}`}
+                          required
+                          value={formatPhoneNumber(telefone.numero)}
+                          error={Boolean(telefoneError)}
+                          helperText={telefoneError}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.map(
+                                (t: Telefone, i: number) =>
+                                  i === index
+                                    ? {
+                                        ...t,
+                                        numero: formatPhoneNumber(
+                                          e.target.value
+                                        ),
+                                      }
+                                    : t
+                              ),
+                            })
+                          }
+                        />
+                        <Button
+                          className="removeInput"
+                          variant="text"
+                          onClick={() => {
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.filter(
+                                (t: Telefone, i: number) => i !== index
+                              ),
+                            });
+                          }}
+                        >
+                          <GrClose />
+                        </Button>
+                      </ContainerTelefoneStyled>
+                    );
+                  }
+                )}
+                <Button
+                  className="buttonAddNumber"
+                  variant="text"
+                  onClick={() =>
+                    setSelectedContato((contato: Contato) => {
+                      return {
+                        ...contato,
+                        telefones: [...contato.telefones, { numero: "" }],
+                      };
+                    })
+                  }
+                >
+                  Adicionar novo numero
+                </Button>
+              </div>
+              <div className="buttons">
+                <Button variant="contained" type="submit">
+                  Salvar
+                </Button>
+                <Button
+                  className="delete"
+                  variant="contained"
+                  onClick={handleEditModalDelete}
+                >
+                  Excluir
+                </Button>
+              </div>
+            </form>
           </div>
         </ContainerModalStyled>
       </Modal>
@@ -356,93 +424,115 @@ const ListarContatos = () => {
                 <GrClose />
               </Button>
             </div>
-            <div className="inputs">
-              <TextField
-                label="Nome"
-                value={selectedContato?.nome || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    nome: e.target.value,
-                  })
-                }
-              />
-              <TextField
-                label="Idade"
-                value={selectedContato?.idade || ""}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedContato({
-                    ...selectedContato,
-                    idade: parseInt(e.target.value),
-                  })
-                }
-              />
-              {selectedContato?.telefones?.map(
-                (telefone: Telefone, index: number) => {
-                  return (
-                    <ContainerTelefoneStyled key={index}>
-                      <TextField
-                        className="input"
-                        label={`Telefone ${index + 1}`}
-                        value={telefone.numero}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.map(
-                              (t: Telefone, i: number) =>
-                                i === index
-                                  ? { ...t, numero: e.target.value }
-                                  : t
-                            ),
-                          })
-                        }
-                      />
-                      <Button
-                        className="removeInput"
-                        variant="text"
-                        onClick={() => {
-                          setSelectedContato({
-                            ...selectedContato,
-                            telefones: selectedContato.telefones.filter(
-                              (t: Telefone, i: number) => i !== index
-                            ),
-                          });
-                        }}
-                      >
-                        <GrClose />
-                      </Button>
-                    </ContainerTelefoneStyled>
-                  );
-                }
-              )}
-              <Button
-                className="buttonAddNumber"
-                variant="text"
-                onClick={() =>
-                  setSelectedContato((contato: Contato) => {
-                    if (selectedContato === null) {
-                      return {
-                        nome: "",
-                        idade: "",
-                        telefones: [{ numero: "" }],
-                      };
-                    }
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreateSave();
+              }}
+            >
+              <div className="inputs">
+                <TextField
+                  label="Nome"
+                  required
+                  error={Boolean(errors.nome)}
+                  helperText={errors.nome}
+                  value={selectedContato?.nome || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      nome: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Idade"
+                  required
+                  error={Boolean(errors.idade)}
+                  helperText={errors.idade}
+                  value={selectedContato?.idade || ""}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSelectedContato({
+                      ...selectedContato,
+                      idade: parseInt(e.target.value),
+                    })
+                  }
+                />
+                {selectedContato?.telefones?.map(
+                  (telefone: Telefone, index: number) => {
+                    const telefoneError = errors[`telefones[${index}].numero`];
+                    return (
+                      <ContainerTelefoneStyled key={index}>
+                        <TextField
+                          className="input"
+                          label={`Telefone ${index + 1}`}
+                          required
+                          value={formatPhoneNumber(telefone.numero)}
+                          error={Boolean(telefoneError)}
+                          helperText={telefoneError}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.map(
+                                (t: Telefone, i: number) =>
+                                  i === index
+                                    ? {
+                                        ...t,
+                                        numero: formatPhoneNumber(
+                                          e.target.value
+                                        ),
+                                      }
+                                    : t
+                              ),
+                            })
+                          }
+                        />
+                        <Button
+                          className="removeInput"
+                          variant="text"
+                          onClick={() => {
+                            setSelectedContato({
+                              ...selectedContato,
+                              telefones: selectedContato.telefones.filter(
+                                (t: Telefone, i: number) => i !== index
+                              ),
+                            });
+                          }}
+                        >
+                          <GrClose />
+                        </Button>
+                      </ContainerTelefoneStyled>
+                    );
+                  }
+                )}
+                <Button
+                  className="buttonAddNumber"
+                  variant="text"
+                  onClick={() =>
+                    setSelectedContato((contato: Contato) => {
+                      if (selectedContato === null) {
+                        return {
+                          nome: "",
+                          idade: "",
+                          telefones: [{ numero: "" }],
+                        };
+                      }
 
-                    return {
-                      ...contato,
-                      telefones: [...contato.telefones, { numero: "" }],
-                    };
-                  })
-                }
-              >
-                adicionar novo numero
-              </Button>
-            </div>
-            <div className="buttons">
-              <Button variant="contained" onClick={handleCreateSave}>
-                Salvar
-              </Button>
-            </div>
+                      return {
+                        ...contato,
+                        telefones: [...contato.telefones, { numero: "" }],
+                      };
+                    })
+                  }
+                >
+                  adicionar novo numero
+                </Button>
+              </div>
+              <div className="buttons">
+                <Button variant="contained" type="submit">
+                  Salvar
+                </Button>
+              </div>
+            </form>
           </div>
         </ContainerModalStyled>
       </Modal>
