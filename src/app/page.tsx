@@ -11,12 +11,8 @@ export default function Home() {
 
   return (
     <ThemeProvider theme={theme}>
-      <MainStyled>
-        <ListarContatos />
-      </MainStyled>
+      <ListarContatos />
       <ToastContainer />
     </ThemeProvider>
   );
 }
-
-export const MainStyled = styled.main``;
