@@ -3,8 +3,8 @@
 ## Introdução
 
 Esta é uma aplicação Next.js de uma agenda de contatos que utiliza o Prisma para acesso ao banco de dados. É possível realizar as operações básicas de CRUD (criação, leitura, atualização e exclusão) de contatos e seus respectivos telefones. A rota para a aplicação localmente é: 
-- front-end: [localhost:3000/](localhost:3000/)
-- api: [localhost:3000/](localhost:3000/api)
+- front-end: [localhost:3000](http://localhost:3000/)
+- api: [localhost:3000/api](http://localhost:3000/api)
 
 ## Pré-requisitos
 Antes de rodar a aplicação, certifique-se de ter as seguintes ferramentas instaladas:
@@ -12,7 +12,10 @@ Antes de rodar a aplicação, certifique-se de ter as seguintes ferramentas inst
 - Node.js (versão 18 ou superior)
 - Yarn (versão 1 ou superior)
 - Um banco de dados PostgreSQL 
-- caso não tenha o postgres pode usar este para testes: **postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti**
+- caso não tenha o postgres pode usar este para testes: 
+```bash
+postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti
+```
 
 Instalação
 
@@ -31,9 +34,10 @@ DATABASE_URL=postgresql://user:password@localhost:5432/mydatabase
 ```
 Substitua user, password e mydatabase pelos valores correspondentes do seu banco de dados PostgreSQL.
 
-> Você pode utilizar o database_url abaixo para conexão com banco que está dispónivel no render.com:
-- **postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti**
-
+### Você pode utilizar o database_url abaixo para conexão com banco que está dispónivel no render.com:
+```bash
+postgres://davinti_user:mQpsbfy6xy2HymxO84VHSNO0T7GE4Rl7@dpg-chdp7qu7avj0djja90m0-a.oregon-postgres.render.com/davinti
+```
 ## Execução em Desenvolvimento
 
 Para executar a aplicação em modo de desenvolvimento, execute o comando:
