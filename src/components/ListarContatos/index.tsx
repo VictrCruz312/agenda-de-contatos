@@ -74,9 +74,12 @@ const ListarContatos = () => {
             .toLowerCase()
             .includes(search.value.toLowerCase());
         } else if (search.searchType === "telefone") {
-          return contato.telefones.some((telefone) =>
-            telefone.numero.toLowerCase().includes(search.value!.toLowerCase())
-          );
+          return contato.telefones.some((telefone) => {
+            return telefone.numero
+              .replace(/\D/g, "")
+              .toLowerCase()
+              .includes(search.value!.replace(/\D/g, "").toLowerCase());
+          });
         }
       } else {
         return true;
